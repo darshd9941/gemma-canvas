@@ -1,0 +1,125 @@
+.workflow-agent {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 380px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-bright);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fade-in 0.3s ease;
+}
+
+.workflow-agent__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.workflow-agent__icon {
+  font-size: 16px;
+}
+
+.workflow-agent__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+
+.workflow-agent__input-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.workflow-agent__input {
+  width: 100%;
+  min-height: 80px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  padding: 10px;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.workflow-agent__input:focus {
+  border-color: var(--accent-purple);
+}
+
+.workflow-agent__submit {
+  align-self: flex-end;
+  background: var(--accent-purple);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  min-width: 60px;
+}
+
+.workflow-agent__submit:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.workflow-agent__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.workflow-agent__error {
+  color: var(--accent-red);
+  font-size: 11px;
+  background: var(--accent-red-dim);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.workflow-agent__success-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.workflow-agent__save-btn {
+  background: transparent;
+  border: 1px solid var(--accent-green);
+  color: var(--accent-green);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.workflow-agent__save-btn:hover {
+  background: var(--accent-green);
+  color: #000;
+}
+
+.workflow-agent__saved-tag {
+  color: var(--accent-green);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 0;
+}

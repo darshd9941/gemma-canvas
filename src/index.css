@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-deep: #080b12;
+  --bg-base: #0d1117;
+  --bg-surface: #111520;
+  --bg-elevated: #161c2d;
+  --bg-glass: rgba(22, 28, 45, 0.7);
+
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-default: rgba(255,255,255,0.1);
+  --border-bright: rgba(255,255,255,0.2);
+
+  --accent-purple: #7c5cfc;
+  --accent-purple-dim: rgba(124, 92, 252, 0.15);
+  --accent-blue: #4f9eff;
+  --accent-blue-dim: rgba(79, 158, 255, 0.15);
+  --accent-cyan: #00d2ff;
+  --accent-green: #22d3a5;
+  --accent-green-dim: rgba(34, 211, 165, 0.15);
+  --accent-orange: #ff8c42;
+  --accent-orange-dim: rgba(255, 140, 66, 0.15);
+  --accent-pink: #f471b5;
+  --accent-pink-dim: rgba(244, 113, 181, 0.15);
+  --accent-red: #ff5757;
+  --accent-red-dim: rgba(255, 87, 87, 0.12);
+
+  --text-primary: #e8eaf0;
+  --text-secondary: #8b93a8;
+  --text-muted: #4a5068;
+  --text-accent: #7c5cfc;
+
+  --node-radius: 12px;
+  --panel-radius: 16px;
+  --transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-md: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 48px rgba(0,0,0,0.5);
+  --shadow-glow-purple: 0 0 32px rgba(124,92,252,0.2);
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
+
+/* React Flow overrides */
+.react-flow__background { background: var(--bg-deep); }
+.react-flow__edge-path { stroke: var(--accent-purple); stroke-width: 1.5; }
+.react-flow__edge.selected .react-flow__edge-path { stroke: var(--accent-cyan); }
+.react-flow__connection-line { stroke: var(--accent-purple); stroke-width: 2; stroke-dasharray: 5 5; }
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-purple);
+  background: var(--bg-deep);
+  transition: all var(--transition);
+}
+.react-flow__handle:hover,
+.react-flow__handle-connecting { background: var(--accent-purple); transform: scale(1.4); }
+.react-flow__handle-valid { border-color: var(--accent-green); background: var(--accent-green); }
+
+/* Huge invisible hitbox to make grabbing node strings much easier */
+.react-flow__handle::after {
+  content: "";
+  position: absolute;
+  top: -15px;
+  left: -15px;
+  right: -15px;
+  bottom: -15px;
+  background: transparent;
+}
+
+.react-flow__controls {
+  bottom: 24px;
+  left: 24px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.react-flow__controls-button {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.react-flow__controls-button:last-child { border-bottom: none; }
+.react-flow__controls-button:hover { background: var(--accent-purple-dim); color: var(--accent-purple); }
+.react-flow__controls-button svg { fill: currentColor; stroke: none; width: 14px; height: 14px; }
+.react-flow__minimap {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.react-flow__minimap-mask { fill: rgba(8,11,18,0.7); }
+
+/* Node selection ring */
+.react-flow__node.selected > .gemma-node { box-shadow: 0 0 0 2px var(--accent-purple), var(--shadow-glow-purple); }
+
+/* Utility classes */
+.mono { font-family: 'JetBrains Mono', monospace; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Animations */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(124,92,252,0.3); }
+  50% { box-shadow: 0 0 20px rgba(124,92,252,0.6); }
+}
+@keyframes fade-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slide-in-right { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
