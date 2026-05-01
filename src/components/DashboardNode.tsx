@@ -15,19 +15,36 @@ export function DashboardNode({ id, data }: NodeProps<NodeData>) {
     const incomingEdges = edges.filter((e) => e.target === id);
     let htmlContent = '';
     let imageDataUrl: string | undefined;
+    let hasTextSource = false;
+    let hasRunningSource = false;
 
     for (const edge of incomingEdges) {
       const sourceNode = nodes.find((n) => n.id === edge.source);
       const d = sourceNode?.data;
       if (!d) continue;
 
+      // If any upstream is still running, wait
+      if (d.running) {
+        hasRunningSource = true;
+        continue;
+      }
+
       if (edge.targetHandle === 'image-in' && d.imageDataUrl) {
         imageDataUrl = d.imageDataUrl as string;
       } else if (edge.targetHandle === 'text-in') {
+        hasTextSource = true;
         const text = (d.output as string) || (d.text as string) || '';
         htmlContent += text;
       }
     }
+
+    // Wait if any upstream is still running
+    if (hasRunningSource) return;
+    // Wait if we have a text-in connection but no content yet
+    if (hasTextSource && !htmlContent) return;
+    // Wait if we have an image-in connection but no image yet
+    const hasImageEdge = incomingEdges.some((e) => e.targetHandle === 'image-in');
+    if (hasImageEdge && !imageDataUrl) return;
 
     // Clean markdown if the AI wrapped it in ```html
     const cleanedHtml = htmlContent

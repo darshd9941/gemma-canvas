@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { NodeBase } from './NodeBase';
 import { useCanvasStore, type NodeData } from '../store';
-import { ollamaChat, ollamaVision } from '../ollama';
+import { aiChat, aiVision } from '../ai';
 import './NodeBase.css';
 
 export function ExtractorNode({ id, data }: NodeProps<NodeData>) {
@@ -37,11 +37,11 @@ export function ExtractorNode({ id, data }: NodeProps<NodeData>) {
     try {
       if (imageDataUrl) {
         const prompt = `${query}\n\nExtract exactly what is asked, return only the extracted content.`;
-        await ollamaVision(prompt, imageDataUrl, selectedModel, (c) =>
+        await aiVision(prompt, imageDataUrl, selectedModel, (c) =>
           updateNodeData(id, { output: c })
         );
       } else {
-        await ollamaChat(
+        await aiChat(
           [
             {
               role: 'system',

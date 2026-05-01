@@ -91,3 +91,73 @@
 }
 .toolbar__btn:hover { background: var(--bg-glass); color: var(--text-primary); border-color: var(--border-bright); }
 .toolbar__btn.danger:hover { background: var(--accent-red-dim); color: var(--accent-red); border-color: rgba(255,87,87,0.3); }
+
+.toolbar__settings-panel {
+  position: absolute;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  padding: 20px;
+  z-index: 100;
+  box-shadow: var(--shadow-lg);
+  min-width: 380px;
+  animation: fade-in 0.15s ease;
+}
+
+.toolbar__settings-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.toolbar__settings-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.toolbar__settings-row label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.toolbar__settings-input {
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.toolbar__settings-input:focus {
+  border-color: var(--accent-purple);
+}
+
+.toolbar__settings-input::placeholder {
+  color: var(--text-muted);
+}
+
+.toolbar__settings-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+.toolbar__btn.active {
+  background: var(--accent-purple-dim);
+  color: var(--accent-purple);
+  border-color: var(--accent-purple);
+}

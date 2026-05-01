@@ -141,7 +141,7 @@ export function Sidebar({ onAddNode }: SidebarProps) {
              📂 Lab ({workflowCount})
           </button>
         </div>
-        <div className="sidebar__subtitle">Offline AI Workflow</div>
+        <div className="sidebar__subtitle">AI Workflow Builder</div>
       </div>
 
       <div className="sidebar__section-title">Nodes</div>

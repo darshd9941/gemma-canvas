@@ -13,7 +13,6 @@ export function WorkflowAgent() {
   const setNodesEdges = useCanvasStore((s) => s.setGraphData);
   const saveToLibrary = useCanvasStore((s) => s.saveToLibrary);
   const model = useCanvasStore((s) => s.selectedModel);
-  const fitView = useCanvasStore((s) => s.triggerFitView); // we'll need to mock or trigger this
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
@@ -24,7 +23,7 @@ export function WorkflowAgent() {
     
     try {
       const { rawJson } = await buildGraphFromPrompt(prompt, model);
-      const graph = parseGeneratedGraph(rawJson);
+      const graph = parseGeneratedGraph(rawJson, prompt);
       
       if (setNodesEdges) {
          setNodesEdges(graph.nodes, graph.edges);

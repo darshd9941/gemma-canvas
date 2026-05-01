@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { NodeBase } from './NodeBase';
 import { useCanvasStore, type NodeData } from '../store';
-import { ollamaChat } from '../ollama';
+import { aiChat } from '../ai';
 import './NodeBase.css';
 
 export function GemmaChatNode({ id, data }: NodeProps<NodeData>) {
@@ -42,7 +42,7 @@ export function GemmaChatNode({ id, data }: NodeProps<NodeData>) {
         { role: 'user' as const, content: userContent },
       ];
 
-      await ollamaChat(messages, model, (chunk) => {
+      await aiChat(messages, model, (chunk) => {
         updateNodeData(id, { output: chunk });
       });
     } catch (e: unknown) {

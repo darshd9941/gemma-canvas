@@ -10,10 +10,12 @@ export function StartNode({ id, data }: NodeProps<NodeData>) {
   const edges = useCanvasStore((s) => s.edges);
 
   const handleRun = useCallback(() => {
-    // Fire trigger signal to all connected outputs
+    // Fire trigger signal to all connected outputs — staggered to avoid concurrent API floods
     const outgoingEdges = edges.filter(e => e.source === id);
-    outgoingEdges.forEach(edge => {
-      updateNodeData(edge.target, { triggerRun: Date.now() });
+    outgoingEdges.forEach((edge, i) => {
+      setTimeout(() => {
+        updateNodeData(edge.target, { triggerRun: Date.now() });
+      }, i * 200);
     });
   }, [id, edges, updateNodeData]);
 

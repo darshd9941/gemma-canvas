@@ -5,20 +5,53 @@ import { useCanvasStore, type NodeData } from '../store';
 import './NodeBase.css';
 import './ImageInput.css';
 
+const MAX_DIMENSION = 1024;
+const JPEG_QUALITY = 0.7;
+
+function compressImage(dataUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width;
+      let h = img.height;
+      if (w > MAX_DIMENSION || h > MAX_DIMENSION) {
+        const scale = MAX_DIMENSION / Math.max(w, h);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 export function ImageInputNode({ id, data }: NodeProps<NodeData>) {
   const updateNodeData = useCanvasStore((s) => s.updateNodeData);
   const deleteNode = useCanvasStore((s) => s.deleteNode);
+  const edges = useCanvasStore((s) => s.edges);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(
-    (file: File) => {
+    async (file: File) => {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        updateNodeData(id, { imageDataUrl: e.target?.result as string });
-      };
-      reader.readAsDataURL(file);
+      const rawUrl: string = await new Promise((resolve) => {
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.readAsDataURL(file);
+      });
+      const compressed = await compressImage(rawUrl);
+      updateNodeData(id, { imageDataUrl: compressed });
+      const outgoingEdges = edges.filter((edge) => edge.source === id);
+      outgoingEdges.forEach((edge) => {
+        updateNodeData(edge.target, { triggerRun: Date.now() });
+      });
     },
-    [id, updateNodeData]
+    [id, updateNodeData, edges]
   );
 
   const onDrop = useCallback(

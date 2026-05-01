@@ -15,15 +15,28 @@ export function AggregatorNode({ id, data }: NodeProps<NodeData>) {
     // Collect from all inputs
     const incomingEdges = edges.filter((e) => e.target === id);
     let aggregatedText = '';
+    let readyCount = 0;
+    const totalCount = incomingEdges.length;
     
     for (const edge of incomingEdges) {
       const sourceNode = nodes.find((n) => n.id === edge.source);
       const d = sourceNode?.data;
       if (!d) continue;
 
-      if (d.output) aggregatedText += (d.output as string).trim() + '\n\n---\n\n';
-      else if (d.text) aggregatedText += (d.text as string).trim() + '\n\n---\n\n';
+      // If upstream is still running, skip but don't count as ready
+      if (d.running) continue;
+
+      const hasContent = d.output || d.text || d.imageDataUrl;
+      if (hasContent) {
+        readyCount++;
+        if (d.output) aggregatedText += (d.output as string).trim() + '\n\n---\n\n';
+        else if (d.text) aggregatedText += (d.text as string).trim() + '\n\n---\n\n';
+        else if (d.imageDataUrl) aggregatedText += '[Image provided]\n\n---\n\n';
+      }
     }
+
+    // Wait for ALL upstream nodes to have content before aggregating
+    if (readyCount < totalCount) return;
 
     // Trim trailing divider
     if (aggregatedText.endsWith('\n\n---\n\n')) {

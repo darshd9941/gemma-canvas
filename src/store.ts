@@ -14,6 +14,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 export type ModelId = 'gemma4:e4b' | 'gemma4:31b' | string;
 
+export type AIBackend = 'ollama' | 'mimo';
+
 export interface OllamaStatus {
   connected: boolean;
   models: string[];
@@ -74,6 +76,10 @@ interface CanvasStore {
   nodes: Node<NodeData>[];
   edges: Edge[];
   selectedModel: ModelId;
+  backend: AIBackend;
+  mimoApiKey: string;
+  mimoBaseUrl: string;
+  mimoModel: string;
   ollamaUrl: string;
   ollamaStatus: OllamaStatus;
   sidebarOpen: boolean;
@@ -98,6 +104,10 @@ interface CanvasStore {
 
   // Settings
   setSelectedModel: (model: ModelId) => void;
+  setBackend: (backend: AIBackend) => void;
+  setMimoApiKey: (key: string) => void;
+  setMimoBaseUrl: (url: string) => void;
+  setMimoModel: (model: string) => void;
   setOllamaUrl: (url: string) => void;
   setOllamaStatus: (status: Partial<OllamaStatus>) => void;
   setSidebarOpen: (open: boolean) => void;
@@ -154,6 +164,10 @@ export const useCanvasStore = create<CanvasStore>()(
       nodes: [],
       edges: [],
       selectedModel: 'gemma4:e4b',
+      backend: 'ollama',
+      mimoApiKey: '',
+      mimoBaseUrl: 'https://token-plan-sgp.xiaomimimo.com/v1',
+      mimoModel: 'mimo-v2-omni',
       ollamaUrl: 'http://localhost:11434',
       ollamaStatus: { connected: false, models: [], checking: false },
       sidebarOpen: true,
@@ -239,6 +253,10 @@ export const useCanvasStore = create<CanvasStore>()(
       triggerFitView: () => set({ fitViewTrigger: Date.now() }),
 
       setSelectedModel: (model) => set({ selectedModel: model }),
+      setBackend: (backend) => set({ backend }),
+      setMimoApiKey: (key) => set({ mimoApiKey: key }),
+      setMimoBaseUrl: (url) => set({ mimoBaseUrl: url }),
+      setMimoModel: (model) => set({ mimoModel: model }),
       setOllamaUrl: (url) => set({ ollamaUrl: url }),
       setOllamaStatus: (status) =>
         set((s) => ({ ollamaStatus: { ...s.ollamaStatus, ...status } })),
@@ -294,12 +312,39 @@ export const useCanvasStore = create<CanvasStore>()(
     }),
     {
       name: 'gemma-canvas-state',
+      version: 4,
+      migrate: (persisted: unknown, version: number) => {
+        const state = persisted as Record<string, unknown>;
+        if (version < 4) {
+          if (state.mimoBaseUrl === 'https://api.mimo.xiaomi.com/v1') {
+            state.mimoBaseUrl = 'https://token-plan-sgp.xiaomimimo.com/v1';
+          }
+          const badModels = ['mimo/mimo-v2.5-pro', 'MiMo-V2.5-Pro', 'mimo/mimo-v2.5', 'mimo-v2.5-pro'];
+          if (typeof state.mimoModel === 'string' && badModels.includes(state.mimoModel)) {
+            state.mimoModel = 'mimo-v2-omni';
+          }
+        }
+        return state;
+      },
       partialize: (s) => ({
-        nodes: s.nodes,
+        nodes: s.nodes.map((n) => ({
+          ...n,
+          data: { ...n.data, imageDataUrl: undefined },
+        })),
         edges: s.edges,
         selectedModel: s.selectedModel,
+        backend: s.backend,
+        mimoApiKey: s.mimoApiKey,
+        mimoBaseUrl: s.mimoBaseUrl,
+        mimoModel: s.mimoModel,
         ollamaUrl: s.ollamaUrl,
-        workflows: s.workflows,
+        workflows: s.workflows.map((w) => ({
+          ...w,
+          nodes: w.nodes.map((n) => ({
+            ...n,
+            data: { ...n.data, imageDataUrl: undefined },
+          })),
+        })),
       }),
     }
   )

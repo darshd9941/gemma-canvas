@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { NodeBase } from './NodeBase';
 import { useCanvasStore, type NodeData } from '../store';
-import { ollamaVision } from '../ollama';
+import { aiVision } from '../ai';
 import './NodeBase.css';
 
 export function DescribeImageNode({ id, data }: NodeProps<NodeData>) {
@@ -33,7 +33,7 @@ export function DescribeImageNode({ id, data }: NodeProps<NodeData>) {
 
     try {
       const prompt = (data.userPrompt as string) || 'Describe this image in detail.';
-      const result = await ollamaVision(prompt, imageDataUrl, selectedModel, (chunk) => {
+      const result = await aiVision(prompt, imageDataUrl, selectedModel, (chunk) => {
         updateNodeData(id, { output: chunk });
       });
       updateNodeData(id, { output: result });

@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useCanvasStore, type NodeData } from '../store';
-import { ollamaChat, ollamaVision } from '../ollama';
+import { aiChat, aiVision } from '../ai';
 import { CopyButton } from './CopyButton';
 import './AssistantNode.css';
 
@@ -23,10 +23,14 @@ export function AssistantNode({ id, data }: NodeProps<NodeData>) {
     let incomingText = '';
     const incomingImages: string[] = [];
 
+    // Check if any upstream source is still running — if so, wait
     for (const edge of incomingEdges) {
       const sourceNode = nodes.find((n) => n.id === edge.source);
       const d = sourceNode?.data;
       if (!d) continue;
+
+      // If upstream is still running, don't process yet — re-trigger will come when it finishes
+      if (d.running) return;
 
       if (edge.targetHandle === 'image-in' && d.imageDataUrl) {
         incomingImages.push(d.imageDataUrl as string);
@@ -39,6 +43,13 @@ export function AssistantNode({ id, data }: NodeProps<NodeData>) {
     const manualInput = (data.text as string) || '';
     const fullTextPrompt = [incomingText.trim(), manualInput.trim()].filter(Boolean).join('\n\n---\n\n');
 
+    // Check if we have an image-in connection but no image uploaded yet — wait
+    const hasImageInEdge = incomingEdges.some((e) => e.targetHandle === 'image-in');
+    if (hasImageInEdge && incomingImages.length === 0) {
+      // Don't error — just silently wait. The imageInput node will re-trigger us when ready.
+      return;
+    }
+
     if (!fullTextPrompt && incomingImages.length === 0) {
       updateNodeData(id, { error: 'Please enter a prompt or connect an input node.' });
       return;
@@ -49,10 +60,8 @@ export function AssistantNode({ id, data }: NodeProps<NodeData>) {
 
     try {
       const sysPrompt = (data.systemPrompt as string) || 'You are a helpful AI assistant.';
-      
+
       if (incomingImages.length > 0) {
-        // For vision, many models ignore 'system' role. 
-        // We bake the system prompt into the user prompt for better adherence.
         const visionPrompt = [
           "INSTRUCTION:",
           sysPrompt,
@@ -60,18 +69,50 @@ export function AssistantNode({ id, data }: NodeProps<NodeData>) {
           fullTextPrompt || 'Please analyze this image based on the instructions above.'
         ].join('\n');
 
-        await ollamaVision(visionPrompt, incomingImages[0], model, (chunk) => {
-          updateNodeData(id, { output: chunk });
-        }, sysPrompt); // Still pass sysPrompt as system role just in case
+        // Retry wrapper for transient network errors
+        const runVision = async (attempt: number = 0): Promise<string> => {
+          try {
+            return await aiVision(visionPrompt, incomingImages[0], model, (chunk) => {
+              updateNodeData(id, { output: chunk });
+            }, sysPrompt);
+          } catch (e: unknown) {
+            const msg = (e as Error).message || '';
+            if (attempt < 2 && (msg.includes('Failed to fetch') || msg.includes('fetch') || msg.includes('network'))) {
+              await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+              return runVision(attempt + 1);
+            }
+            // Add helpful context to the error
+            if (msg.includes('Failed to fetch') || msg.includes('fetch')) {
+              throw new Error('Connection failed. Check your API key in ⚙ API Settings and make sure you have internet.');
+            }
+            throw e;
+          }
+        };
+        await runVision();
       } else {
-        await ollamaChat(
-          [
-            { role: 'system', content: sysPrompt },
-            { role: 'user', content: fullTextPrompt || 'Please continue based on your system instructions.' }
-          ],
-          model,
-          (chunk) => updateNodeData(id, { output: chunk })
-        );
+        const runChat = async (attempt: number = 0): Promise<string> => {
+          try {
+            return await aiChat(
+              [
+                { role: 'system', content: sysPrompt },
+                { role: 'user', content: fullTextPrompt || 'Please continue based on your system instructions.' }
+              ],
+              model,
+              (chunk) => updateNodeData(id, { output: chunk })
+            );
+          } catch (e: unknown) {
+            const msg = (e as Error).message || '';
+            if (attempt < 2 && (msg.includes('Failed to fetch') || msg.includes('fetch') || msg.includes('network'))) {
+              await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+              return runChat(attempt + 1);
+            }
+            if (msg.includes('Failed to fetch') || msg.includes('fetch')) {
+              throw new Error('Connection failed. Check your API key in ⚙ API Settings and make sure you have internet.');
+            }
+            throw e;
+          }
+        };
+        await runChat();
       }
     } catch (e: unknown) {
       updateNodeData(id, { error: (e as Error).message });

@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { NodeBase } from './NodeBase';
 import { useCanvasStore, type NodeData } from '../store';
-import { ollamaChat } from '../ollama';
+import { aiChat } from '../ai';
 import './NodeBase.css';
 
 const ENHANCE_SYSTEM = `You are a creative AI prompt engineering expert. 
@@ -36,7 +36,7 @@ export function PromptEnhancerNode({ id, data }: NodeProps<NodeData>) {
     updateNodeData(id, { running: true, error: undefined, output: '' });
 
     try {
-      await ollamaChat(
+      await aiChat(
         [
           { role: 'system', content: ENHANCE_SYSTEM },
           { role: 'user', content: inputText },
